@@ -78,6 +78,7 @@ func _ready() -> void:
 	_TimerLightning.connect("timeout", self, "_on_TimerLightning_timeout")
 	_TimerLightning.one_shot = true
 	add_child(_Lines)
+	_Lines.use_parent_material = true
 	
 	add_child(_AnimationPlayer)
 	_AnimationPlayer.root_node = ".."

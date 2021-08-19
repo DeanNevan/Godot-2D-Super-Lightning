@@ -6,6 +6,7 @@
 [ext_resource path="res://addons/DrunkBull.SuperLightning/src/main/BasicLightningLine2d.gd" type="Script" id=4]
 
 [node name="BasicLightningLine2d" type="Line2D"]
+use_parent_material = true
 width = 100.0
 width_curve = ExtResource( 1 )
 gradient = ExtResource( 2 )
