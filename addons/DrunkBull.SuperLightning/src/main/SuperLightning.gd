@@ -24,30 +24,26 @@ export(bool) var RANDOM_LAST_POINT_POSITION := false
 export(float) var LINE_POINTS_FULL_DISPLAY_TIME_PROPORTION := 0.97
 #已经显示多少比例的点后，点开始逐渐消失
 export(float) var LINE_START_TO_HIDE_POINT_WHEN_SHOWED_POINTS_PERCENT_REACH := 1.0
-#已经显示多少比例的点后，点开始逐渐消失
+#闪电动画
 export(Animation) var LIGHTNING_ANIMATION := preload("res://addons/DrunkBull.SuperLightning/assets/resource/lightning_animation.tres")
 
 var start_point := Vector2()
 var end_point := Vector2()
+var last_time := 1.5
+var is_lightning := false
+var pass_points := PoolVector2Array()
+
 var _direction := Vector2()
 var _normal_direction := Vector2()
 var _length := 0.0
-
-var last_time := 1.5
-
 var _points_count := -1
-var total_points_count := -1
-var lines_count := -1
-var showed_points_count := -1
-var hiding_point := false
-var points_full_display_time := 0.0
-var points_gradually_show_period := 0.0
-
-var had_points_full_display_wait := false
-
-var is_lightning := false
-
-var pass_points := PoolVector2Array()
+var _total_points_count := -1
+var _lines_count := -1
+var _showed_points_count := -1
+var _hiding_point := false
+var _points_full_display_time := 0.0
+var _points_gradually_show_period := 0.0
+var _had_points_full_display_wait := false
 
 var Scene_BasicLightningLine2d = preload("res://addons/DrunkBull.SuperLightning/src/main/BasicLightningLine2d.tscn")
 
@@ -108,7 +104,7 @@ func spawn(_start_point := start_point, _end_point := end_point, _last_time : fl
 	end_point = _end_point
 	last_time = _last_time
 	
-	lines_count = random_int_range(LINES_RANGE.x, LINES_RANGE.y)
+	_lines_count = random_int_range(LINES_RANGE.x, LINES_RANGE.y)
 	
 	for i in lines.size():
 		var lightning_line : BasicLightningLine2d = lines[i]
@@ -126,22 +122,22 @@ func spawn(_start_point := start_point, _end_point := end_point, _last_time : fl
 		_normal_direction = _direction.rotated(PI / 2)
 		_length = (end_point - start_point).length()
 		_points_count = _length / LINE_PIXELS_PER_POINT
-		total_points_count = _points_count
+		_total_points_count = _points_count
 		assert(_points_count > 1)
 		for i in _points_count:
 			if i == 0:
 				if !RANDOM_FIRST_POINT_POSITION:
-					for j in lines_count:
+					for j in _lines_count:
 						lines[j].add_lightning_point(start_point)
 					continue
 			if i == _points_count - 1:
 				if !RANDOM_LAST_POINT_POSITION:
-					for j in lines_count:
+					for j in _lines_count:
 						lines[j].add_lightning_point(end_point)
 					continue
 			var basic_point : Vector2 = start_point + i * LINE_PIXELS_PER_POINT *  _direction
 			var random_vector : Vector2 = rand_range(MIDDLE_LINE_POINTS_FLOAT_RANGE.x, MIDDLE_LINE_POINTS_FLOAT_RANGE.y) * _normal_direction
-			for j in lines_count:
+			for j in _lines_count:
 				var vector = random_vector * rand_range(LINE_POINTS_FLOAT_SCALE_RANGE_MIDDLE_LINE.x, LINE_POINTS_FLOAT_SCALE_RANGE_MIDDLE_LINE.y)
 				var pos = basic_point + vector
 				lines[j].add_lightning_point(pos)
@@ -168,23 +164,23 @@ func spawn(_start_point := start_point, _end_point := end_point, _last_time : fl
 				_from_point = pass_points[i - 1]
 			if _points_count < 1:
 				_points_count = 1
-			total_points_count += _points_count
+			_total_points_count += _points_count
 			for j in _points_count:
 				var basic_point : Vector2 = _from_point + j * LINE_PIXELS_PER_POINT * _direction
 				var random_vector : Vector2 = rand_range(MIDDLE_LINE_POINTS_FLOAT_RANGE.x, MIDDLE_LINE_POINTS_FLOAT_RANGE.y) * _normal_direction
-				for k in lines_count:
+				for k in _lines_count:
 					var vector = random_vector * rand_range(LINE_POINTS_FLOAT_SCALE_RANGE_MIDDLE_LINE.x, LINE_POINTS_FLOAT_SCALE_RANGE_MIDDLE_LINE.y)
 					var pos = basic_point + vector
 					lines[k].add_lightning_point(pos)
 	pass
 
 func lightning():
-	showed_points_count = 0
-	had_points_full_display_wait = false
-	hiding_point = false
-	points_full_display_time = last_time * LINE_POINTS_FULL_DISPLAY_TIME_PROPORTION
-	points_gradually_show_period = (last_time - points_full_display_time) / total_points_count
-	for i in lines_count:
+	_showed_points_count = 0
+	_had_points_full_display_wait = false
+	_hiding_point = false
+	_points_full_display_time = last_time * LINE_POINTS_FULL_DISPLAY_TIME_PROPORTION
+	_points_gradually_show_period = (last_time - _points_full_display_time) / _total_points_count
+	for i in _lines_count:
 		var lightning_line : BasicLightningLine2d = lines[i]
 		lightning_line.spawn()
 		lightning_line.show()
@@ -197,7 +193,7 @@ func lightning():
 	_AnimationPlayer.play(LIGHTNING_ANIMATION.resource_name)
 	
 	_TimerLightning.start(last_time)
-	_TimerGraduallyShowHide.start(points_gradually_show_period)
+	_TimerGraduallyShowHide.start(_points_gradually_show_period)
 	_TimerGraduallyShowHide.paused = false
 	
 	is_lightning = true
@@ -214,19 +210,19 @@ func _on_TimerLightning_timeout() -> void:
 
 func _on_TimerGraduallyShowHide_timeout() -> void:
 	if is_lightning:
-		if !had_points_full_display_wait:
-			if showed_points_count == total_points_count:
-				yield(get_tree().create_timer(points_full_display_time * 0.8), "timeout")
-				had_points_full_display_wait = true
-		var showed_percent : float = float(showed_points_count) / total_points_count
-		if !hiding_point:
+		if !_had_points_full_display_wait:
+			if _showed_points_count == _total_points_count:
+				yield(get_tree().create_timer(_points_full_display_time * 0.8), "timeout")
+				_had_points_full_display_wait = true
+		var showed_percent : float = float(_showed_points_count) / _total_points_count
+		if !_hiding_point:
 			if showed_percent >= LINE_START_TO_HIDE_POINT_WHEN_SHOWED_POINTS_PERCENT_REACH:
-				hiding_point = true
-		for i in lines_count:
+				_hiding_point = true
+		for i in _lines_count:
 			var lightning_line : BasicLightningLine2d = lines[i]
-			if hiding_point:
+			if _hiding_point:
 				lightning_line.hide_first()
 			lightning_line.show_next()
-		showed_points_count += 1
-		_TimerGraduallyShowHide.start(points_gradually_show_period)
+		_showed_points_count += 1
+		_TimerGraduallyShowHide.start(_points_gradually_show_period)
 	pass # Replace with function body.
