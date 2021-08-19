@@ -142,7 +142,7 @@ func spawn(_start_point := start_point, _end_point := end_point, _last_time : fl
 				var pos = basic_point + vector
 				lines[j].add_lightning_point(pos)
 	else:
-		for i in pass_points.size():
+		for i in pass_points.size() + 1:
 			var _from_point := Vector2()
 			if i == 0:
 				_direction = (pass_points[0] - start_point).normalized()
@@ -150,12 +150,12 @@ func spawn(_start_point := start_point, _end_point := end_point, _last_time : fl
 				_length = (pass_points[0] - start_point).length()
 				_points_count = _length / LINE_PIXELS_PER_POINT
 				_from_point = start_point
-			elif i == pass_points.size() - 1:
-				_direction = (end_point - pass_points[i]).normalized()
+			elif i == pass_points.size():
+				_direction = (end_point - pass_points[i - 1]).normalized()
 				_normal_direction = _direction.rotated(PI / 2)
-				_length = (end_point - pass_points[i]).length()
+				_length = (end_point - pass_points[i - 1]).length()
 				_points_count = _length / LINE_PIXELS_PER_POINT
-				_from_point = pass_points[i]
+				_from_point = pass_points[i - 1]
 			else:
 				_direction = (pass_points[i] - pass_points[i - 1]).normalized()
 				_normal_direction = _direction.rotated(PI / 2)
