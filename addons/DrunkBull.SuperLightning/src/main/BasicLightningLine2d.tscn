@@ -1,0 +1,14 @@
+[gd_scene load_steps=5 format=2]
+
+[ext_resource path="res://addons/DrunkBull.SuperLightning/assets/resource/line_basic_curve.tres" type="Curve" id=1]
+[ext_resource path="res://addons/DrunkBull.SuperLightning/assets/resource/line_basic_gradient.tres" type="Gradient" id=2]
+[ext_resource path="res://addons/DrunkBull.SuperLightning/assets/art/spark_05_rotated.png" type="Texture" id=3]
+[ext_resource path="res://addons/DrunkBull.SuperLightning/src/main/BasicLightningLine2d.gd" type="Script" id=4]
+
+[node name="BasicLightningLine2d" type="Line2D"]
+width = 100.0
+width_curve = ExtResource( 1 )
+gradient = ExtResource( 2 )
+texture = ExtResource( 3 )
+texture_mode = 2
+script = ExtResource( 4 )
