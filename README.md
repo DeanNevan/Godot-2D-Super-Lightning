@@ -1,5 +1,5 @@
 # SuperLightning
- ---Description language:Chinese--- 
+ ---Description language:Chinese---  
  An addon for 2d thunder&lightning addon in godot game engine.  
  godot的2d闪电插件  
  there is a Demo.tscn in addon folder.please have a look.  
